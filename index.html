@@ -4,19 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Aplikasi Pencatatan Transaksi BRILink</title>
-
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#198754" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="BRILink Tracker" />
-    <link rel="apple-touch-icon" href="icon-152x152.png" />
-
-    <!-- Microsoft Tiles -->
-    <meta name="msapplication-TileImage" content="icon-144x144.png" />
-    <meta name="msapplication-TileColor" content="#198754" />
-
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -1955,72 +1942,6 @@
           notification.remove();
         }, 3000);
       }
-    </script>
-
-    <script>
-      // Register Service Worker
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function () {
-          navigator.serviceWorker
-            .register("service-worker.js")
-            .then(function (registration) {
-              console.log(
-                "ServiceWorker registration successful with scope: ",
-                registration.scope
-              );
-            })
-            .catch(function (error) {
-              console.log("ServiceWorker registration failed: ", error);
-            });
-        });
-      }
-
-      // Handle before install prompt
-      let deferredPrompt;
-      const installButton = document.createElement("button");
-
-      window.addEventListener("beforeinstallprompt", (e) => {
-        // Prevent the mini-infobar from appearing on mobile
-        e.preventDefault();
-        // Stash the event so it can be triggered later
-        deferredPrompt = e;
-        // Show install button
-        showInstallPromotion();
-      });
-
-      function showInstallPromotion() {
-        installButton.innerHTML = "Instal Aplikasi";
-        installButton.className = "btn btn-success position-fixed";
-        installButton.style.bottom = "80px";
-        installButton.style.right = "20px";
-        installButton.style.zIndex = "1000";
-        installButton.onclick = installApp;
-
-        document.body.appendChild(installButton);
-      }
-
-      function installApp() {
-        // Hide the app provided install promotion
-        installButton.style.display = "none";
-        // Show the install prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === "accepted") {
-            console.log("User accepted the install prompt");
-          } else {
-            console.log("User dismissed the install prompt");
-          }
-          deferredPrompt = null;
-        });
-      }
-
-      window.addEventListener("appinstalled", (evt) => {
-        // Log install to analytics
-        console.log("Aplikasi berhasil diinstal");
-        // Hide the install button
-        installButton.style.display = "none";
-      });
     </script>
   </body>
 </html>
