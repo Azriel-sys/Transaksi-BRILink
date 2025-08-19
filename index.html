@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aplikasi Pencatatan Transaksi BRILink</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#198754" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="BRILink Tracker" />
+    <link rel="apple-touch-icon" href="icon-152x152.png" />
+
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#198754" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+      :root {
+        --primary: #198754;
+        --primary-dark: #0f5132;
+        --secondary: #6c757d;
+        --success: #198754;
+        --danger: #dc3545;
+        --warning: #ffc107;
+        --info: #0dcaf0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --brimin: #0055a4;
+        --bnimin: #0033a0;
+        --ovo: #4c2a86;
+        --dana: #1084d0;
+        --gopay: #00aeef;
+        --shopeepay: #ee4d2d;
+        --linkaja: #00b4b3;
+      }
+
+      body {
+        background-color: #f5f7f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding-bottom: 60px;
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      .card {
+        border-radius: 12px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+        border: none;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .card:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      }
+
+      .card-header {
+        border-radius: 12px 12px 0 0 !important;
+        font-weight: 600;
+        padding: 16px 20px;
+        background-color: white;
+      }
+
+      .balance-card {
+        transition: transform 0.3s;
+      }
+
+      .balance-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .positive {
+        color: var(--success);
+        font-weight: 600;
+      }
+
+      .negative {
+        color: var(--danger);
+        font-weight: 600;
+      }
+
+      .transaction-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .balance-status {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .btn-primary {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        padding: 10px 20px;
+        font-weight: 600;
+        border-radius: 8px;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+      }
+
+      .btn-outline-primary {
+        border-radius: 8px;
+        font-weight: 500;
+      }
+
+      .section {
+        display: none;
+        animation: fadeIn 0.5s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .active-section {
+        display: block;
+      }
+
+      .nav-link {
+        color: var(--secondary);
+        font-weight: 500;
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin: 0 5px;
+        transition: all 0.3s;
+      }
+
+      .nav-link:hover {
+        background-color: rgba(25, 135, 84, 0.1);
+      }
+
+      .nav-link.active {
+        color: var(--primary);
+        font-weight: 600;
+        background-color: rgba(25, 135, 84, 0.15);
+      }
+
+      .logo {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+      }
+
+      .form-control,
+      .form-select {
+        border-radius: 8px;
+        padding: 12px;
+        border: 1px solid #ddd;
+      }
+
+      .form-control:focus,
+      .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+      }
+
+      .input-group-text {
+        border-radius: 8px 0 0 8px;
+      }
+
+      .table th {
+        font-weight: 600;
+        color: var(--dark);
+        border-top: none;
+      }
+
+      .table-hover tbody tr:hover {
+        background-color: rgba(25, 135, 84, 0.05);
+      }
+
+      .badge {
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: var(--dark);
+        color: white;
+        text-align: center;
+        padding: 12px 0;
+        font-size: 14px;
+      }
+
+      .closing-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid var(--primary);
+      }
+
+      .bank-bri {
+        border-top: 3px solid var(--brimin);
+      }
+
+      .bank-bni {
+        border-top: 3px solid var(--bnimin);
+      }
+
+      .bank-cash {
+        border-top: 3px solid var(--success);
+      }
+
+      .transaction-icon {
+        font-size: 1.5rem;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        margin-right: 15px;
+      }
+
+      .transaction-tarik {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: var(--danger);
+      }
+
+      .transaction-setor {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: var(--success);
+      }
+
+      .transaction-transfer {
+        background-color: rgba(13, 202, 240, 0.1);
+        color: var(--info);
+      }
+
+      .transaction-pengeluaran {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: var(--warning);
+      }
+
+      .transaction-tambah-modal {
+        background-color: rgba(111, 66, 193, 0.1);
+        color: #6f42c1;
+      }
+
+      .transaction-ovo {
+        background-color: rgba(76, 42, 134, 0.1);
+        color: var(--ovo);
+      }
+
+      .transaction-dana {
+        background-color: rgba(16, 132, 208, 0.1);
+        color: var(--dana);
+      }
+
+      .transaction-gopay {
+        background-color: rgba(0, 174, 239, 0.1);
+        color: var(--gopay);
+      }
+
+      .transaction-shopeepay {
+        background-color: rgba(238, 77, 45, 0.1);
+        color: var(--shopeepay);
+      }
+
+      .transaction-linkaja {
+        background-color: rgba(0, 180, 179, 0.1);
+        color: var(--linkaja);
+      }
+
+      .source-option {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .source-option:hover,
+      .source-option.selected {
+        border-color: var(--primary);
+        background-color: rgba(25, 135, 84, 0.05);
+      }
+
+      .source-option.selected {
+        border-width: 2px;
+      }
+
+      .income-card {
+        background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+        border-left: 4px solid var(--success);
+      }
+
+      .search-container {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .search-container .form-control {
+        padding-left: 40px;
+      }
+
+      .search-container i {
+        position: absolute;
+        left: 15px;
+        top: 12px;
+        color: #6c757d;
+        z-index: 5;
+      }
+
+      .filter-container {
+        margin-bottom: 20px;
+      }
+
+      @media (max-width: 768px) {
+        .balance-card {
+          margin-bottom: 15px;
+        }
+
+        .nav-link {
+          margin: 5px;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <img
+            src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgNnY2bDQgMiI+PC9wYXRoPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjEwIj48L2NpcmNsZT48L3N2Zz4="
+            class="logo"
+            alt="Logo"
+          />
+          BRILink Tracker
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" data-section="dashboard">
+                <i class="fas fa-home me-1"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-section="initial-balance">
+                <i class="fas fa-wallet me-1"></i> Modal Awal
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-section="transaction">
+                <i class="fas fa-exchange-alt me-1"></i> Transaksi
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-section="report">
+                <i class="fas fa-file-alt me-1"></i> Laporan
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-section="reset">
+                <i class="fas fa-undo me-1"></i> Reset Data
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <!-- Dashboard Section -->
+      <div id="dashboard" class="section active-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>Dashboard</h2>
+          <span class="text-muted" id="current-date"></span>
+        </div>
+
+        <!-- Balance Cards -->
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card balance-card bank-cash">
+              <div
+                class="card-header bg-white d-flex justify-content-between align-items-center"
+              >
+                <span>Saldo Cash</span>
+                <i class="fas fa-wallet fa-lg text-success"></i>
+              </div>
+              <div class="card-body">
+                <h3 id="cash-balance" class="card-text">Rp 0</h3>
+                <p class="text-muted mb-0">Saldo tersedia</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card balance-card bank-bri">
+              <div
+                class="card-header bg-white d-flex justify-content-between align-items-center"
+              >
+                <span>Saldo BRI</span>
+                <i class="fas fa-university fa-lg text-primary"></i>
+              </div>
+              <div class="card-body">
+                <h3 id="bri-balance" class="card-text">Rp 0</h3>
+                <p class="text-muted mb-0">Saldo tersedia</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card balance-card bank-bni">
+              <div
+                class="card-header bg-white d-flex justify-content-between align-items-center"
+              >
+                <span>Saldo BNI</span>
+                <i class="fas fa-university fa-lg text-warning"></i>
+              </div>
+              <div class="card-body">
+                <h3 id="bni-balance" class="card-text">Rp 0</h3>
+                <p class="text-muted mb-0">Saldo tersedia</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Income Summary -->
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card income-card">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-coins me-2"></i>Pendapatan Kotor Jasa Hari
+                  Ini
+                </h5>
+              </div>
+              <div class="card-body">
+                <h3 id="today-income" class="positive">Rp 0</h3>
+                <p class="text-muted mb-0">Total fee dari transaksi hari ini</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card income-card">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-chart-line me-2"></i>Pengeluaran
+                </h5>
+              </div>
+              <div class="card-body">
+                <h3 id="total-income" class="positive">Rp 0</h3>
+                <p class="text-muted mb-0">Total fee dari semua transaksi</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Closing Balance Status -->
+        <div class="card mt-4 closing-card">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">
+              <i class="fas fa-calculator me-2"></i>Status Closing
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 id="closing-status" class="balance-status">
+                  Silakan input modal awal dan transaksi
+                </h5>
+                <p id="closing-detail" class="text-muted mb-0">
+                  Perhitungan akan muncul setelah transaksi dilakukan
+                </p>
+              </div>
+              <div id="balance-icon">
+                <i class="fas fa-question-circle fa-3x text-secondary"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card mt-4">
+          <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">
+              <i class="fas fa-history me-2"></i>Transaksi Terakhir
+            </h5>
+            <a
+              href="#"
+              class="btn btn-sm btn-outline-primary view-all-transactions"
+            >
+              <i class="fas fa-list me-1"></i> Lihat Semua
+            </a>
+          </div>
+          <div class="card-body p-0">
+            <div class="transaction-list">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Waktu</th>
+                    <th>Jenis</th>
+                    <th>Keterangan</th>
+                    <th class="text-end">Jumlah</th>
+                    <th class="text-end">Fee</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-transactions">
+                  <tr>
+                    <td colspan="5" class="text-center py-4">
+                      Belum ada transaksi
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Initial Balance Section -->
+      <div id="initial-balance" class="section">
+        <h2 class="mb-4"><i class="fas fa-wallet me-2"></i>Input Modal Awal</h2>
+        <div class="card">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">
+              <i class="fas fa-sliders-h me-2"></i>Set Saldo Awal
+            </h5>
+          </div>
+          <div class="card-body">
+            <form id="initial-balance-form">
+              <div class="row mb-3">
+                <div class="col-md-4 mb-3">
+                  <label for="initial-cash" class="form-label"
+                    >Saldo Cash</label
+                  >
+                  <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="initial-cash"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="initial-bri" class="form-label">Saldo BRI</label>
+                  <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="initial-bri"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="initial-bni" class="form-label">Saldo BNI</label>
+                  <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="initial-bni"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Simpan Modal Awal
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction Section -->
+      <div id="transaction" class="section">
+        <h2 class="mb-4">
+          <i class="fas fa-exchange-alt me-2"></i>Input Transaksi
+        </h2>
+        <div class="card">
+          <div class="card-header bg-white">
+            <h5 class="mb-0">
+              <i class="fas fa-plus-circle me-2"></i>Tambah Transaksi Baru
+            </h5>
+          </div>
+          <div class="card-body">
+            <form id="transaction-form">
+              <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                  <label for="transaction-type" class="form-label"
+                    >Jenis Transaksi</label
+                  >
+                  <select class="form-select" id="transaction-type" required>
+                    <option value="">Pilih Jenis Transaksi</option>
+                    <option value="tarik">Tarik Tunai</option>
+                    <option value="setor">Setor Tunai</option>
+                    <option value="transfer">Transfer</option>
+                    <option value="pengeluaran">Pengeluaran</option>
+                    <option value="tambah-modal">Tambah Modal</option>
+                    <option value="ovo">OVO</option>
+                    <option value="dana">DANA</option>
+                    <option value="gopay">GoPay</option>
+                    <option value="shopeepay">ShopeePay</option>
+                    <option value="linkaja">LinkAja</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="transaction-amount" class="form-label"
+                    >Jumlah</label
+                  >
+                  <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="transaction-amount"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sumber/Destination Selection -->
+              <div class="row mb-3" id="source-selection" style="display: none">
+                <div class="col-md-12">
+                  <label class="form-label">Sumber</label>
+                  <div id="source-options">
+                    <div class="source-option" data-value="cash">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="source"
+                          id="source-cash"
+                          value="cash"
+                        />
+                        <label class="form-check-label" for="source-cash">
+                          <i class="fas fa-wallet me-1 text-success"></i> Cash
+                        </label>
+                      </div>
+                    </div>
+                    <div class="source-option" data-value="bri">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="source"
+                          id="source-bri"
+                          value="bri"
+                        />
+                        <label class="form-check-label" for="source-bri">
+                          <i class="fas fa-university me-1 text-primary"></i>
+                          BRI
+                        </label>
+                      </div>
+                    </div>
+                    <div class="source-option" data-value="bni">
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="source"
+                          id="source-bni"
+                          value="bni"
+                        />
+                        <label class="form-check-label" for="source-bni">
+                          <i class="fas fa-university me-1 text-warning"></i>
+                          BNI
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transfer Selection -->
+              <div
+                class="row mb-3"
+                id="transfer-selection"
+                style="display: none"
+              >
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Dari Bank</label>
+                  <select class="form-select" id="transfer-from">
+                    <option value="bri">BRI</option>
+                    <option value="bni">BNI</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Tujuan Transfer</label>
+                  <select class="form-select" id="transfer-to">
+                    <option value="cash">Cash</option>
+                    <option value="bri">BRI</option>
+                    <option value="bni">BNI</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                  <label for="transaction-fee" class="form-label"
+                    >Fee/Jasa</label
+                  >
+                  <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="transaction-fee"
+                      min="0"
+                      value="0"
+                      required
+                    />
+                  </div>
+                  <div class="form-text">
+                    Pendapatan jasa dari transaksi ini
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="transaction-description" class="form-label"
+                    >Keterangan (opsional)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="transaction-description"
+                    placeholder="Contoh: Transfer dari Bapak Ahmad"
+                  />
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Simpan Transaksi
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Section -->
+      <div id="report" class="section">
+        <h2 class="mb-4"><i class="fas fa-file-alt me-2"></i>Laporan Harian</h2>
+
+        <!-- Search and Filter -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="search-container">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                class="form-control"
+                id="search-transaction"
+                placeholder="Cari transaksi berdasarkan keterangan..."
+              />
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="filter-container">
+              <select class="form-select" id="filter-type">
+                <option value="">Semua Jenis</option>
+                <option value="tarik">Tarik Tunai</option>
+                <option value="setor">Setor Tunai</option>
+                <option value="transfer">Transfer</option>
+                <option value="pengeluaran">Pengeluaran</option>
+                <option value="tambah-modal">Tambah Modal</option>
+                <option value="ovo">OVO</option>
+                <option value="dana">DANA</option>
+                <option value="gopay">GoPay</option>
+                <option value="shopeepay">ShopeePay</option>
+                <option value="linkaja">LinkAja</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Income Summary -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="card income-card">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-coins me-2"></i>Pendapatan Jasa Hari Ini
+                </h5>
+              </div>
+              <div class="card-body">
+                <h3 id="report-today-income" class="positive">Rp 0</h3>
+                <p class="text-muted mb-0">Total fee dari transaksi hari ini</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card income-card">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-chart-line me-2"></i>Pengeluaran
+                </h5>
+              </div>
+              <div class="card-body">
+                <h3 id="report-total-income" class="positive">Rp 0</h3>
+                <p class="text-muted mb-0">Total fee dari semua transaksi</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">
+              <i class="fas fa-list me-2"></i>Daftar Transaksi
+            </h5>
+            <button id="download-pdf" class="btn btn-sm btn-danger">
+              <i class="fas fa-file-pdf me-1"></i> Unduh PDF
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0" id="report-table">
+                <thead class="table-light">
+                  <tr>
+                    <th>Waktu</th>
+                    <th>Jenis</th>
+                    <th>Keterangan</th>
+                    <th class="text-end">Jumlah</th>
+                    <th class="text-end">Fee</th>
+                  </tr>
+                </thead>
+                <tbody id="report-transactions">
+                  <tr>
+                    <td colspan="5" class="text-center py-4">
+                      Belum ada transaksi
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reset Section -->
+      <div id="reset" class="section">
+        <h2 class="mb-4"><i class="fas fa-undo me-2"></i>Reset Data</h2>
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-eraser me-2"></i>Reset Transaksi
+                </h5>
+              </div>
+              <div class="card-body d-flex flex-column">
+                <p class="card-text">
+                  Hapus semua data transaksi, tetapi pertahankan saldo saat ini.
+                </p>
+                <div class="mt-auto">
+                  <button
+                    class="btn btn-warning w-100"
+                    data-bs-toggle="modal"
+                    data-bs-target="#resetTransactionModal"
+                  >
+                    <i class="fas fa-eraser me-1"></i> Reset Transaksi
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card h-100">
+              <div class="card-header bg-white">
+                <h5 class="mb-0">
+                  <i class="fas fa-trash-alt me-2"></i>Reset Total
+                </h5>
+              </div>
+              <div class="card-body d-flex flex-column">
+                <p class="card-text">
+                  Hapus semua data transaksi dan set saldo kembali ke 0.
+                </p>
+                <div class="mt-auto">
+                  <button
+                    class="btn btn-danger w-100"
+                    data-bs-toggle="modal"
+                    data-bs-target="#resetTotalModal"
+                  >
+                    <i class="fas fa-trash-alt me-1"></i> Reset Total
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset Transaction Modal -->
+    <div class="modal fade" id="resetTransactionModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-eraser me-2"></i>Konfirmasi Reset Transaksi
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Apakah Anda yakin ingin menghapus semua data transaksi? Saldo akan
+              tetap dipertahankan.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-warning"
+              id="confirm-reset-transaction"
+            >
+              <i class="fas fa-eraser me-1"></i> Reset Transaksi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset Total Modal -->
+    <div class="modal fade" id="resetTotalModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-trash-alt me-2"></i>Konfirmasi Reset Total
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Apakah Anda yakin ingin menghapus semua data transaksi dan
+              mengatur ulang saldo ke 0? Tindakan ini tidak dapat dibatalkan.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              id="confirm-reset-total"
+            >
+              <i class="fas fa-trash-alt me-1"></i> Reset Total
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="container">
+        <span
+          >&copy; 2023 Aplikasi Pencatatan Transaksi BRILink | Dibuat dengan
+          <i class="fas fa-heart text-danger"></i
+        ></span>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Initialize jsPDF
+      window.jsPDF = window.jspdf.jsPDF;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Set current date
+        const now = new Date();
+        document.getElementById("current-date").textContent =
+          now.toLocaleDateString("id-ID", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+
+        // Initialize data if not exists
+        if (!localStorage.getItem("initialBalances")) {
+          localStorage.setItem(
+            "initialBalances",
+            JSON.stringify({
+              cash: 0,
+              bri: 0,
+              bni: 0,
+            })
+          );
+        }
+
+        if (!localStorage.getItem("transactions")) {
+          localStorage.setItem("transactions", JSON.stringify([]));
+        }
+
+        // Load data
+        loadInitialBalances();
+        loadTransactions();
+        updateBalanceDisplay();
+        calculateClosing();
+        updateIncomeDisplay();
+
+        // Navigation
+        document.querySelectorAll(".nav-link").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const sectionId = this.getAttribute("data-section");
+
+            // Update active nav link
+            document.querySelectorAll(".nav-link").forEach((navLink) => {
+              navLink.classList.remove("active");
+            });
+            this.classList.add("active");
+
+            // Show selected section
+            document.querySelectorAll(".section").forEach((section) => {
+              section.classList.remove("active-section");
+            });
+            document.getElementById(sectionId).classList.add("active-section");
+
+            // Update income display when report section is shown
+            if (sectionId === "report") {
+              updateIncomeDisplay();
+            }
+          });
+        });
+
+        // Source option selection
+        document.querySelectorAll(".source-option").forEach((option) => {
+          option.addEventListener("click", function () {
+            const value = this.getAttribute("data-value");
+            document.querySelectorAll(".source-option").forEach((opt) => {
+              opt.classList.remove("selected");
+            });
+            this.classList.add("selected");
+            document.querySelector(`#source-${value}`).checked = true;
+          });
+        });
+
+        // View all transactions
+        document
+          .querySelector(".view-all-transactions")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            document.querySelectorAll(".nav-link").forEach((navLink) => {
+              navLink.classList.remove("active");
+              if (navLink.getAttribute("data-section") === "report") {
+                navLink.classList.add("active");
+              }
+            });
+
+            document.querySelectorAll(".section").forEach((section) => {
+              section.classList.remove("active-section");
+            });
+            document.getElementById("report").classList.add("active-section");
+            updateIncomeDisplay();
+          });
+
+        // Initial balance form
+        document
+          .getElementById("initial-balance-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const cash =
+              parseInt(document.getElementById("initial-cash").value) || 0;
+            const bri =
+              parseInt(document.getElementById("initial-bri").value) || 0;
+            const bni =
+              parseInt(document.getElementById("initial-bni").value) || 0;
+
+            const initialBalances = {
+              cash: cash,
+              bri: bri,
+              bni: bni,
+            };
+
+            localStorage.setItem(
+              "initialBalances",
+              JSON.stringify(initialBalances)
+            );
+            updateBalanceDisplay();
+            calculateClosing();
+
+            showNotification("Modal awal berhasil disimpan!", "success");
+          });
+
+        // Transaction type change
+        document
+          .getElementById("transaction-type")
+          .addEventListener("change", function () {
+            const type = this.value;
+            const sourceSelection = document.getElementById("source-selection");
+            const transferSelection =
+              document.getElementById("transfer-selection");
+
+            // Reset semua pilihan
+            sourceSelection.style.display = "none";
+            transferSelection.style.display = "none";
+            document.querySelectorAll(".source-option").forEach((opt) => {
+              opt.classList.remove("selected");
+            });
+            document
+              .querySelectorAll('input[name="source"]')
+              .forEach((radio) => {
+                radio.checked = false;
+              });
+
+            if (type === "pengeluaran" || type === "tambah-modal") {
+              sourceSelection.style.display = "block";
+            } else if (type === "transfer") {
+              transferSelection.style.display = "block";
+            }
+          });
+
+        // Transaction form
+        document
+          .getElementById("transaction-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const type = document.getElementById("transaction-type").value;
+            const amount =
+              parseInt(document.getElementById("transaction-amount").value) ||
+              0;
+            const fee =
+              parseInt(document.getElementById("transaction-fee").value) || 0;
+            const description = document.getElementById(
+              "transaction-description"
+            ).value;
+
+            if (amount <= 0) {
+              showNotification("Jumlah transaksi harus lebih dari 0", "error");
+              return;
+            }
+
+            let source = "";
+            let transferFrom = "";
+            let transferTo = "";
+
+            if (type === "pengeluaran" || type === "tambah-modal") {
+              source = document.querySelector(
+                'input[name="source"]:checked'
+              )?.value;
+              if (!source) {
+                showNotification("Harap pilih sumber", "error");
+                return;
+              }
+            } else if (type === "transfer") {
+              transferFrom = document.getElementById("transfer-from").value;
+              transferTo = document.getElementById("transfer-to").value;
+
+              if (transferFrom === transferTo) {
+                showNotification(
+                  "Sumber dan tujuan transfer tidak boleh sama",
+                  "error"
+                );
+                return;
+              }
+            }
+
+            const transaction = {
+              id: Date.now(),
+              type: type,
+              amount: amount,
+              fee: fee,
+              description: description,
+              source: source,
+              transferFrom: transferFrom,
+              transferTo: transferTo,
+              timestamp: new Date().toISOString(),
+            };
+
+            // Save transaction
+            const transactions = JSON.parse(
+              localStorage.getItem("transactions") || []
+            );
+            transactions.push(transaction);
+            localStorage.setItem("transactions", JSON.stringify(transactions));
+
+            // Update balances
+            updateBalances(transaction);
+
+            // Reset form
+            document.getElementById("transaction-form").reset();
+            document.getElementById("source-selection").style.display = "none";
+            document.getElementById("transfer-selection").style.display =
+              "none";
+
+            // Update UI
+            loadTransactions();
+            updateBalanceDisplay();
+            calculateClosing();
+            updateIncomeDisplay();
+
+            showNotification("Transaksi berhasil disimpan!", "success");
+          });
+
+        // Reset transaction
+        document
+          .getElementById("confirm-reset-transaction")
+          .addEventListener("click", function () {
+            localStorage.setItem("transactions", JSON.stringify([]));
+            loadTransactions();
+            calculateClosing();
+            updateIncomeDisplay();
+            $("#resetTransactionModal").modal("hide");
+            showNotification("Semua transaksi telah dihapus!", "success");
+          });
+
+        // Reset total
+        document
+          .getElementById("confirm-reset-total")
+          .addEventListener("click", function () {
+            localStorage.setItem(
+              "initialBalances",
+              JSON.stringify({
+                cash: 0,
+                bri: 0,
+                bni: 0,
+              })
+            );
+            localStorage.setItem("transactions", JSON.stringify([]));
+            loadInitialBalances();
+            loadTransactions();
+            updateBalanceDisplay();
+            calculateClosing();
+            updateIncomeDisplay();
+            $("#resetTotalModal").modal("hide");
+            showNotification("Semua data telah direset!", "success");
+          });
+
+        // Download PDF
+        document
+          .getElementById("download-pdf")
+          .addEventListener("click", function () {
+            generatePDF();
+          });
+
+        // Search functionality
+        document
+          .getElementById("search-transaction")
+          .addEventListener("input", function () {
+            filterTransactions();
+          });
+
+        // Filter by type
+        document
+          .getElementById("filter-type")
+          .addEventListener("change", function () {
+            filterTransactions();
+          });
+      });
+
+      function loadInitialBalances() {
+        const initialBalances = JSON.parse(
+          localStorage.getItem("initialBalances")
+        );
+        document.getElementById("initial-cash").value = initialBalances.cash;
+        document.getElementById("initial-bri").value = initialBalances.bri;
+        document.getElementById("initial-bni").value = initialBalances.bni;
+      }
+
+      function loadTransactions() {
+        const transactions =
+          JSON.parse(localStorage.getItem("transactions")) || [];
+        const recentTbody = document.getElementById("recent-transactions");
+        const reportTbody = document.getElementById("report-transactions");
+
+        // Clear existing rows
+        recentTbody.innerHTML = "";
+        reportTbody.innerHTML = "";
+
+        if (transactions.length === 0) {
+          recentTbody.innerHTML =
+            '<tr><td colspan="5" class="text-center py-4">Belum ada transaksi</td></tr>';
+          reportTbody.innerHTML =
+            '<tr><td colspan="5" class="text-center py-4">Belum ada transaksi</td></tr>';
+          return;
+        }
+
+        // Sort transactions by timestamp (newest first)
+        transactions.sort(
+          (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+        );
+
+        // Display recent transactions (last 5)
+        const recentTransactions = transactions.slice(0, 5);
+        recentTransactions.forEach((transaction) => {
+          const row = recentTbody.insertRow();
+
+          // Format time
+          const date = new Date(transaction.timestamp);
+          const timeString = date.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          // Type text and icon
+          let typeText = "";
+          let typeClass = "";
+          switch (transaction.type) {
+            case "tarik":
+              typeText = "Tarik Tunai";
+              typeClass = "transaction-tarik";
+              break;
+            case "setor":
+              typeText = "Setor Tunai";
+              typeClass = "transaction-setor";
+              break;
+            case "transfer":
+              typeText = `Transfer (${transaction.transferFrom} → ${transaction.transferTo})`;
+              typeClass = "transaction-transfer";
+              break;
+            case "pengeluaran":
+              typeText = "Pengeluaran";
+              typeClass = "transaction-pengeluaran";
+              break;
+            case "tambah-modal":
+              typeText = "Tambah Modal";
+              typeClass = "transaction-tambah-modal";
+              break;
+            case "ovo":
+              typeText = "OVO";
+              typeClass = "transaction-ovo";
+              break;
+            case "dana":
+              typeText = "DANA";
+              typeClass = "transaction-dana";
+              break;
+            case "gopay":
+              typeText = "GoPay";
+              typeClass = "transaction-gopay";
+              break;
+            case "shopeepay":
+              typeText = "ShopeePay";
+              typeClass = "transaction-shopeepay";
+              break;
+            case "linkaja":
+              typeText = "LinkAja";
+              typeClass = "transaction-linkaja";
+              break;
+          }
+
+          row.insertCell(0).textContent = timeString;
+
+          const typeCell = row.insertCell(1);
+          typeCell.innerHTML = `<div class="d-flex align-items-center"><div class="transaction-icon ${typeClass}"><i class="fas ${getTransactionIcon(
+            transaction.type
+          )}"></i></div> ${typeText}</div>`;
+
+          const descCell = row.insertCell(2);
+          descCell.textContent = transaction.description || "-";
+
+          const amountCell = row.insertCell(3);
+          amountCell.textContent = formatCurrency(transaction.amount);
+          amountCell.classList.add("text-end");
+          amountCell.classList.add(
+            transaction.type === "pengeluaran" ? "negative" : "positive"
+          );
+
+          const feeCell = row.insertCell(4);
+          feeCell.textContent = formatCurrency(transaction.fee);
+          feeCell.classList.add("text-end");
+        });
+
+        // Display all transactions in report
+        transactions.forEach((transaction) => {
+          const row = reportTbody.insertRow();
+
+          // Format date and time
+          const date = new Date(transaction.timestamp);
+          const dateString = date.toLocaleDateString("id-ID");
+          const timeString = date.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          // Type text
+          let typeText = "";
+          switch (transaction.type) {
+            case "tarik":
+              typeText = "Tarik Tunai";
+              break;
+            case "setor":
+              typeText = "Setor Tunai";
+              break;
+            case "transfer":
+              typeText = `Transfer (${transaction.transferFrom} → ${transaction.transferTo})`;
+              break;
+            case "pengeluaran":
+              typeText = "Pengeluaran";
+              break;
+            case "tambah-modal":
+              typeText = "Tambah Modal";
+              break;
+            case "ovo":
+              typeText = "OVO";
+              break;
+            case "dana":
+              typeText = "DANA";
+              break;
+            case "gopay":
+              typeText = "GoPay";
+              break;
+            case "shopeepay":
+              typeText = "ShopeePay";
+              break;
+            case "linkaja":
+              typeText = "LinkAja";
+              break;
+          }
+
+          row.insertCell(0).textContent = `${dateString} ${timeString}`;
+          row.insertCell(1).textContent = typeText;
+          row.insertCell(2).textContent = transaction.description || "-";
+
+          const amountCell = row.insertCell(3);
+          amountCell.textContent = formatCurrency(transaction.amount);
+          amountCell.classList.add("text-end");
+          amountCell.classList.add(
+            transaction.type === "pengeluaran" ? "negative" : "positive"
+          );
+
+          const feeCell = row.insertCell(4);
+          feeCell.textContent = formatCurrency(transaction.fee);
+          feeCell.classList.add("text-end");
+        });
+      }
+
+      function filterTransactions() {
+        const searchTerm = document
+          .getElementById("search-transaction")
+          .value.toLowerCase();
+        const filterType = document.getElementById("filter-type").value;
+        const transactions =
+          JSON.parse(localStorage.getItem("transactions")) || [];
+        const reportTbody = document.getElementById("report-transactions");
+
+        // Clear existing rows
+        reportTbody.innerHTML = "";
+
+        if (transactions.length === 0) {
+          reportTbody.innerHTML =
+            '<tr><td colspan="5" class="text-center py-4">Belum ada transaksi</td></tr>';
+          return;
+        }
+
+        // Filter transactions
+        const filteredTransactions = transactions.filter((transaction) => {
+          const matchesSearch = transaction.description
+            ? transaction.description.toLowerCase().includes(searchTerm)
+            : false;
+          const matchesType = filterType
+            ? transaction.type === filterType
+            : true;
+
+          return matchesSearch || matchesType;
+        });
+
+        if (filteredTransactions.length === 0) {
+          reportTbody.innerHTML =
+            '<tr><td colspan="5" class="text-center py-4">Tidak ada transaksi yang sesuai dengan pencarian</td></tr>';
+          return;
+        }
+
+        // Display filtered transactions
+        filteredTransactions.forEach((transaction) => {
+          const row = reportTbody.insertRow();
+
+          // Format date and time
+          const date = new Date(transaction.timestamp);
+          const dateString = date.toLocaleDateString("id-ID");
+          const timeString = date.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          // Type text
+          let typeText = "";
+          switch (transaction.type) {
+            case "tarik":
+              typeText = "Tarik Tunai";
+              break;
+            case "setor":
+              typeText = "Setor Tunai";
+              break;
+            case "transfer":
+              typeText = `Transfer (${transaction.transferFrom} → ${transaction.transferTo})`;
+              break;
+            case "pengeluaran":
+              typeText = "Pengeluaran";
+              break;
+            case "tambah-modal":
+              typeText = "Tambah Modal";
+              break;
+            case "ovo":
+              typeText = "OVO";
+              break;
+            case "dana":
+              typeText = "DANA";
+              break;
+            case "gopay":
+              typeText = "GoPay";
+              break;
+            case "shopeepay":
+              typeText = "ShopeePay";
+              break;
+            case "linkaja":
+              typeText = "LinkAja";
+              break;
+          }
+
+          row.insertCell(0).textContent = `${dateString} ${timeString}`;
+          row.insertCell(1).textContent = typeText;
+          row.insertCell(2).textContent = transaction.description || "-";
+
+          const amountCell = row.insertCell(3);
+          amountCell.textContent = formatCurrency(transaction.amount);
+          amountCell.classList.add("text-end");
+          amountCell.classList.add(
+            transaction.type === "pengeluaran" ? "negative" : "positive"
+          );
+
+          const feeCell = row.insertCell(4);
+          feeCell.textContent = formatCurrency(transaction.fee);
+          feeCell.classList.add("text-end");
+        });
+      }
+
+      function getTransactionIcon(type) {
+        switch (type) {
+          case "tarik":
+            return "fa-money-bill-wave";
+          case "setor":
+            return "fa-money-check";
+          case "transfer":
+            return "fa-exchange-alt";
+          case "pengeluaran":
+            return "fa-share-square";
+          case "tambah-modal":
+            return "fa-plus-circle";
+          case "ovo":
+            return "fa-mobile-alt";
+          case "dana":
+            return "fa-wallet";
+          case "gopay":
+            return "fa-credit-card";
+          case "shopeepay":
+            return "fa-shopping-bag";
+          case "linkaja":
+            return "fa-link";
+          default:
+            return "fa-exchange-alt";
+        }
+      }
+
+      function updateBalances(transaction) {
+        const initialBalances = JSON.parse(
+          localStorage.getItem("initialBalances")
+        );
+
+        switch (transaction.type) {
+          case "tarik":
+            initialBalances.cash -= transaction.amount;
+            initialBalances.bri += transaction.amount;
+            break;
+          case "setor":
+            initialBalances.cash += transaction.amount;
+            initialBalances.bri -= transaction.amount;
+            break;
+          case "transfer":
+            initialBalances[transaction.transferFrom] -= transaction.amount;
+            initialBalances[transaction.transferTo] += transaction.amount;
+            break;
+          case "pengeluaran":
+            initialBalances[transaction.source] -= transaction.amount;
+            break;
+          case "tambah-modal":
+            initialBalances[transaction.source] += transaction.amount;
+            break;
+          case "ovo":
+          case "dana":
+          case "gopay":
+          case "shopeepay":
+          case "linkaja":
+            // Untuk e-wallet, kurangi dari BRI dan tambahkan ke cash
+            initialBalances.bri -= transaction.amount;
+            initialBalances.cash += transaction.amount;
+            break;
+        }
+
+        localStorage.setItem(
+          "initialBalances",
+          JSON.stringify(initialBalances)
+        );
+      }
+
+      function updateBalanceDisplay() {
+        const initialBalances = JSON.parse(
+          localStorage.getItem("initialBalances")
+        );
+
+        document.getElementById("cash-balance").textContent = formatCurrency(
+          initialBalances.cash
+        );
+        document.getElementById("bri-balance").textContent = formatCurrency(
+          initialBalances.bri
+        );
+        document.getElementById("bni-balance").textContent = formatCurrency(
+          initialBalances.bni
+        );
+      }
+
+      function updateIncomeDisplay() {
+        const transactions =
+          JSON.parse(localStorage.getItem("transactions")) || [];
+        const today = new Date().toLocaleDateString("id-ID");
+
+        let todayIncome = 0;
+        let totalIncome = 0;
+        let todayExpense = 0;
+        let totalExpense = 0;
+
+        transactions.forEach((transaction) => {
+          const transactionDate = new Date(
+            transaction.timestamp
+          ).toLocaleDateString("id-ID");
+          // Fee tetap untuk Pendapatan Jasa Hari Ini
+          todayIncome += transactionDate === today ? transaction.fee || 0 : 0;
+          totalIncome += transaction.fee || 0;
+
+          // Pengeluaran
+          if (transaction.type === "pengeluaran") {
+            totalExpense += transaction.amount || 0;
+            if (transactionDate === today) {
+              todayExpense += transaction.amount || 0;
+            }
+          }
+        });
+
+        document.getElementById("today-income").textContent =
+          formatCurrency(todayIncome);
+        document.getElementById("total-income").textContent =
+          formatCurrency(totalExpense);
+        document.getElementById("report-today-income").textContent =
+          formatCurrency(todayIncome);
+        document.getElementById("report-total-income").textContent =
+          formatCurrency(totalExpense);
+      }
+
+      function calculateClosing() {
+        const initialBalances = JSON.parse(
+          localStorage.getItem("initialBalances")
+        );
+        const transactions =
+          JSON.parse(localStorage.getItem("transactions")) || [];
+
+        const initialTotal =
+          initialBalances.cash + initialBalances.bri + initialBalances.bni;
+
+        // Calculate total fee and expenses
+        let totalFee = 0;
+        let totalExpenses = 0;
+
+        transactions.forEach((transaction) => {
+          totalFee += transaction.fee || 0;
+
+          if (transaction.type === "pengeluaran") {
+            totalExpenses += transaction.amount;
+          }
+        });
+
+        const calculatedTotal = initialTotal + totalFee - totalExpenses;
+        const actualTotal =
+          initialBalances.cash + initialBalances.bri + initialBalances.bni;
+
+        const difference = Math.abs(calculatedTotal - actualTotal);
+        const isBalanced = calculatedTotal === actualTotal;
+
+        const statusElement = document.getElementById("closing-status");
+        const detailElement = document.getElementById("closing-detail");
+        const iconElement = document.getElementById("balance-icon");
+
+        if (transactions.length === 0) {
+          statusElement.textContent = "Silakan input modal awal dan transaksi";
+          statusElement.className = "balance-status text-secondary";
+          detailElement.textContent =
+            "Perhitungan akan muncul setelah transaksi dilakukan";
+          iconElement.innerHTML =
+            '<i class="fas fa-question-circle fa-3x text-secondary"></i>';
+          return;
+        }
+
+        if (isBalanced) {
+          statusElement.textContent = "✅ Saldo Sesuai";
+          statusElement.className = "balance-status text-success";
+          detailElement.innerHTML = `
+                    Total Saldo: ${formatCurrency(actualTotal)} | 
+                    Modal Awal: ${formatCurrency(initialTotal)} | 
+                    Fee: ${formatCurrency(totalFee)} | 
+                    Pengeluaran: ${formatCurrency(totalExpenses)}
+                `;
+          iconElement.innerHTML =
+            '<i class="fas fa-check-circle fa-3x text-success"></i>';
+        } else {
+          statusElement.textContent = `✅ Total Bersih Admin : ${formatCurrency(
+            difference
+          )}`;
+          statusElement.className = "balance-status text-danger";
+          detailElement.innerHTML = `
+                    Fee/Jasa: ${formatCurrency(totalFee)} | 
+                    Pengeluaran: ${formatCurrency(totalExpenses)}
+                `;
+          iconElement.innerHTML =
+            '<i class="fas fa-exclamation-triangle fa-3x text-danger"></i>';
+        }
+      }
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function generatePDF() {
+        const transactions =
+          JSON.parse(localStorage.getItem("transactions")) || [];
+        const initialBalances = JSON.parse(
+          localStorage.getItem("initialBalances")
+        );
+
+        if (transactions.length === 0) {
+          showNotification("Tidak ada transaksi untuk diunduh", "error");
+          return;
+        }
+
+        // Create new PDF document
+        const doc = new jsPDF();
+
+        // Add title
+        doc.setFontSize(18);
+        doc.setTextColor(25, 135, 84);
+        doc.text("Laporan Transaksi BRILink", 14, 22);
+
+        // Add date
+        const now = new Date();
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Tanggal: ${now.toLocaleDateString("id-ID")}`, 14, 30);
+
+        // Prepare table data
+        const tableData = [];
+        transactions.forEach((transaction) => {
+          // Format date and time
+          const date = new Date(transaction.timestamp);
+          const dateString = date.toLocaleDateString("id-ID");
+          const timeString = date.toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          // Type text
+          let typeText = "";
+          switch (transaction.type) {
+            case "tarik":
+              typeText = "Tarik Tunai";
+              break;
+            case "setor":
+              typeText = "Setor Tunai";
+              break;
+            case "transfer":
+              typeText = `Transfer (${transaction.transferFrom} → ${transaction.transferTo})`;
+              break;
+            case "pengeluaran":
+              typeText = "Pengeluaran";
+              break;
+            case "tambah-modal":
+              typeText = "Tambah Modal";
+              break;
+            case "ovo":
+              typeText = "OVO";
+              break;
+            case "dana":
+              typeText = "DANA";
+              break;
+            case "gopay":
+              typeText = "GoPay";
+              break;
+            case "shopeepay":
+              typeText = "ShopeePay";
+              break;
+            case "linkaja":
+              typeText = "LinkAja";
+              break;
+          }
+
+          tableData.push([
+            `${dateString} ${timeString}`,
+            typeText,
+            transaction.description || "-",
+            formatCurrency(transaction.amount),
+            formatCurrency(transaction.fee || 0),
+          ]);
+        });
+
+        // Add table
+        doc.autoTable({
+          startY: 60,
+          head: [["Waktu", "Jenis", "Keterangan", "Jumlah", "Fee"]],
+          body: tableData,
+          theme: "grid",
+          headStyles: {
+            fillColor: [25, 135, 84],
+          },
+        });
+
+        // Calculate totals
+        let totalAmount = 0;
+        let totalFee = 0;
+        let totalPengeluaran = 0;
+        let totalTambahanSaldo = 0;
+
+        transactions.forEach((transaction) => {
+          totalAmount += transaction.amount;
+          totalFee += transaction.fee || 0;
+          if (transaction.type === "pengeluaran") {
+            totalPengeluaran += transaction.amount;
+          }
+          if (transaction.type === "tambah-modal") {
+            totalTambahanSaldo += transaction.amount;
+          }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 10;
+
+        // Add totals
+        doc.setFontSize(12);
+        doc.text(`Total Transaksi: ${formatCurrency(totalAmount)}`, 14, finalY);
+        doc.text(
+          `Total Tambahan Saldo: ${formatCurrency(totalTambahanSaldo)}`,
+          14,
+          finalY + 7
+        );
+        const afterTotalY = finalY + 21;
+
+        // Add closing balances
+        doc.text(
+          `Saldo Akhir Cash: ${formatCurrency(initialBalances.cash)}`,
+          14,
+          afterTotalY
+        );
+        doc.text(
+          `Saldo Akhir BRI: ${formatCurrency(initialBalances.bri)}`,
+          14,
+          afterTotalY + 7
+        );
+        doc.text(
+          `Saldo Akhir BNI: ${formatCurrency(initialBalances.bni)}`,
+          14,
+          afterTotalY + 14
+        );
+        // Add total fee and total pengeluaran after saldo akhir BNI
+        doc.text(
+          `Total Fee: ${formatCurrency(totalFee)}`,
+          14,
+          afterTotalY + 21
+        );
+        doc.text(
+          `Total Pengeluaran: ${formatCurrency(totalPengeluaran)}`,
+          14,
+          afterTotalY + 28
+        );
+
+        // Save the PDF
+        doc.save(`laporan-brilink-${now.toISOString().split("T")[0]}.pdf`);
+        showNotification("Laporan PDF berhasil diunduh", "success");
+      }
+
+      function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement("div");
+        notification.className = `position-fixed top-0 end-0 m-4 alert alert-${
+          type === "success" ? "success" : "danger"
+        } alert-dismissible fade show`;
+        notification.style.zIndex = "9999";
+        notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+        // Add to page
+        document.body.appendChild(notification);
+
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      }
+    </script>
+
+    <script>
+      // Register Service Worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("service-worker.js")
+            .then(function (registration) {
+              console.log(
+                "ServiceWorker registration successful with scope: ",
+                registration.scope
+              );
+            })
+            .catch(function (error) {
+              console.log("ServiceWorker registration failed: ", error);
+            });
+        });
+      }
+
+      // Handle before install prompt
+      let deferredPrompt;
+      const installButton = document.createElement("button");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        // Prevent the mini-infobar from appearing on mobile
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Show install button
+        showInstallPromotion();
+      });
+
+      function showInstallPromotion() {
+        installButton.innerHTML = "Instal Aplikasi";
+        installButton.className = "btn btn-success position-fixed";
+        installButton.style.bottom = "80px";
+        installButton.style.right = "20px";
+        installButton.style.zIndex = "1000";
+        installButton.onclick = installApp;
+
+        document.body.appendChild(installButton);
+      }
+
+      function installApp() {
+        // Hide the app provided install promotion
+        installButton.style.display = "none";
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === "accepted") {
+            console.log("User accepted the install prompt");
+          } else {
+            console.log("User dismissed the install prompt");
+          }
+          deferredPrompt = null;
+        });
+      }
+
+      window.addEventListener("appinstalled", (evt) => {
+        // Log install to analytics
+        console.log("Aplikasi berhasil diinstal");
+        // Hide the install button
+        installButton.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
